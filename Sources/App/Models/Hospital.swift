@@ -4,16 +4,25 @@ import Vapor
 final class Hospital: Model, Content {
     static let schema = "hospital"
 
-    @ID(key: .id)
+    struct FieldKeys {
+        static var name: FieldKey { "name" }
+        static var latitude: FieldKey { "latitude" }
+        static var longitude: FieldKey { "longitude" }
+    }
+
+    @ID()
     var id: UUID?
 
-    @Field(key: "name")
+    @Field(key: FieldKeys.name)
     var name: String
 
-    @Field(key: "latitude")
+    @Children(for: \.$hospital)
+    var appointments: [Appointment]
+
+    @Field(key: FieldKeys.latitude)
     var latitude: Double
 
-    @Field(key: "longitude")
+    @Field(key: FieldKeys.longitude)
     var longitude: Double
 
     init() { }
