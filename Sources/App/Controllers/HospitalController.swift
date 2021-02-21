@@ -41,8 +41,23 @@ struct HospitalController: RouteCollection {
     }
 
     func create(req: Request) throws -> EventLoopFuture<Hospital> {
-        let hospital = try req.content.decode(Hospital.self)
-        return hospital.save(on: req.db).map { hospital }
+        let latitude = try req.content.get(Double.self, at: "latitude")
+        let longitude = try req.content.get(Double.self, at: "longitude")
+        let name = try req.content.get(String.self, at: "name")
+        return Hospital.query(on: req.db)
+            .filter(\.$latitude == latitude)
+            .filter(\.$longitude == longitude)
+            .all()
+            .flatMap { hosptalsFound -> EventLoopFuture<Hospital> in
+                if let first = hosptalsFound.first {
+                    return req.eventLoop.makeSucceededFuture(first)
+                } else {
+                    let newHospital = Hospital(name: name, latitude: latitude, longitude: longitude)
+                    return newHospital
+                        .save(on: req.db)
+                        .map { newHospital }
+                }
+            }
     }
 
     func delete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
