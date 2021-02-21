@@ -7,8 +7,19 @@ struct HospitalController: RouteCollection {
         models.get(use: index)
         models.post(use: create)
         models.group(":hospitalId") { model in
-            models.delete(use: delete)
+            model.delete(use: delete)
+            model.get(use: getHospital)
         }
+    }
+
+    func getHospital(req: Request) throws -> EventLoopFuture<[Appointment]> {
+        Hospital.find(req.parameters.get("hospitalId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMap { hospital -> EventLoopFuture<[Appointment]> in
+                Appointment.query(on: req.db)
+                    .filter(\.$hospital.$id == hospital.id!)
+                    .all()
+            }
     }
 
     func index(req: Request) throws -> EventLoopFuture<[Hospital]> {
