@@ -30,8 +30,18 @@ struct PatientController: RouteCollection {
     }
 
     func create(req: Request) throws -> EventLoopFuture<Patient> {
+        let name = try req.content.get(String.self, at: "name")
         let model = try req.content.decode(Patient.self)
-        return model.save(on: req.db).map { model }
+        return Patient.query(on: req.db)
+            .filter(\.$name == name)
+            .all()
+            .flatMap { patientsFound -> EventLoopFuture<Patient> in
+                if let first = patientsFound.first {
+                    return req.eventLoop.makeSucceededFuture(first)
+                } else {
+                    return model.save(on: req.db).map { model }
+                }
+            }
     }
 
     func delete(req: Request) throws -> EventLoopFuture<HTTPStatus> {
