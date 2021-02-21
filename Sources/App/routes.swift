@@ -10,5 +10,12 @@ func routes(_ app: Application) throws {
         return "Hello, world!"
     }
 
-    try app.register(collection: HospitalController())
+    let controllers: [RouteCollection] = [
+        HospitalController(),
+        PatientController(),
+        AppointmentController()
+    ]
+    for controller in controllers {
+        try app.register(collection: controller)
+    }
 }

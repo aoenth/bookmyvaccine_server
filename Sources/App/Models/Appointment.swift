@@ -26,10 +26,12 @@ final class Appointment: Model, Content {
 
     init(
         id: UUID? = nil,
+        time: Date,
         hospitalID: UUID,
         patientID: UUID
     ) {
         self.id = id
+        self.time = time
         $hospital.id = hospitalID
         $patient.id = patientID
     }

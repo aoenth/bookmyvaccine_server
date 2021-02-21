@@ -3,11 +3,11 @@ import Vapor
 
 struct HospitalController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
-        let todos = routes.grouped("hospitals")
-        todos.get(use: index)
-        todos.post(use: create)
-        todos.group(":hospitalId") { todo in
-            todo.delete(use: delete)
+        let models = routes.grouped("hospitals")
+        models.get(use: index)
+        models.post(use: create)
+        models.group(":hospitalId") { model in
+            models.delete(use: delete)
         }
     }
 
