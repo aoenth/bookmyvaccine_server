@@ -32,13 +32,19 @@ struct Migration001: Migration {
                         onDelete: DatabaseSchema.ForeignKeyAction.setNull,
                         onUpdate: DatabaseSchema.ForeignKeyAction.cascade
                     )
-                    .field(Appointment.FieldKeys.time, .date, .required)
+                    .field(Appointment.FieldKeys.time, .datetime, .required)
                     .create(),
             ]
         )
     }
 
     func revert(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema(Appointment.schema).delete()
+        database.eventLoop.flatten(
+            [
+                database.schema(Hospital.schema).delete(),
+                database.schema(Patient.schema).delete(),
+                database.schema(Appointment.schema).delete(),
+            ]
+        )
     }
 }
