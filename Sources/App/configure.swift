@@ -26,7 +26,12 @@ public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
-    try app.databases.use(.postgres(url: Environment.databaseURL), as: .psql)
+    try app.databases.use(
+        .postgres(
+            configuration: Environment.databaseConfiguration
+        ),
+        as: .psql
+    )
 
     let migrations: [Migration] = [
         Migration001()
