@@ -13,14 +13,9 @@ struct HospitalController: RouteCollection {
         }
     }
 
-    func getHospital(req: Request) throws -> EventLoopFuture<[Appointment]> {
+    func getHospital(req: Request) throws -> EventLoopFuture<Hospital> {
         Hospital.find(req.parameters.get("hospitalId"), on: req.db)
             .unwrap(or: Abort(.notFound))
-            .flatMap { hospital -> EventLoopFuture<[Appointment]> in
-                Appointment.query(on: req.db)
-                    .filter(\.$hospital.$id == hospital.id!)
-                    .all()
-            }
     }
 
     func getHospitalsOrByName(req: Request) throws -> EventLoopFuture<[Appointment]> {
