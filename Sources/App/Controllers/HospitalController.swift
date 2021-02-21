@@ -28,10 +28,10 @@ struct HospitalController: RouteCollection {
         return Hospital.query(on: req.db)
             .filter(\.$name == hospitalName)
             .first()
-            .unwrap(or: Abort(.noContent))
             .flatMap { hospital -> EventLoopFuture<[Appointment]> in
-                Appointment.query(on: req.db)
-                    .filter(\.$hospital.$id == hospital.id!)
+                let id = hospital?.id ?? UUID()
+                return Appointment.query(on: req.db)
+                    .filter(\.$hospital.$id == id)
                     .all()
             }
     }
