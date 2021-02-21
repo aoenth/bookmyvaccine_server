@@ -8,7 +8,21 @@ struct PatientController: RouteCollection {
         models.post(use: create)
         models.group(":patientId") { model in
             model.delete(use: delete)
+            model.get("appointments", use: getPatientAppointments)
         }
+    }
+
+    func getPatientAppointments(
+        req: Request
+    ) throws -> EventLoopFuture<[Appointment]> {
+        let patient = Patient.find(req.parameters.get("patientId"), on: req.db)
+            .unwrap(or: Abort(.notFound))
+        let result = patient.flatMap { input in
+            Appointment.query(on: req.db)
+                .filter(\.$patient.$id == input.id!)
+                .all()
+        }
+        return result
     }
 
     func index(req: Request) throws -> EventLoopFuture<[Patient]> {
