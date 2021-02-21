@@ -21,11 +21,14 @@ public func configure(_ app: Application) throws {
 
     try app.databases.use(.postgres(url: Environment.databaseURL), as: .psql)
 
-    let migragions: [Migration] = [
+    let migrations: [Migration] = [
         Migration001()
     ]
 
-    app.migrations.add(migragions)
+    app.migrations.add(migrations)
+    if app.environment == .development {
+        try app.autoMigrate().wait()
+    }
 
     // register routes
     try routes(app)
