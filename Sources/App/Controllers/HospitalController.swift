@@ -5,6 +5,7 @@ struct HospitalController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let models = routes.grouped("hospitals")
         models.get(use: index)
+        models.get("appointments", use: getHospitalsOrByName)
         models.post(use: create)
         models.group(":hospitalId") { model in
             model.delete(use: delete)
@@ -15,6 +16,19 @@ struct HospitalController: RouteCollection {
     func getHospital(req: Request) throws -> EventLoopFuture<[Appointment]> {
         Hospital.find(req.parameters.get("hospitalId"), on: req.db)
             .unwrap(or: Abort(.notFound))
+            .flatMap { hospital -> EventLoopFuture<[Appointment]> in
+                Appointment.query(on: req.db)
+                    .filter(\.$hospital.$id == hospital.id!)
+                    .all()
+            }
+    }
+
+    func getHospitalsOrByName(req: Request) throws -> EventLoopFuture<[Appointment]> {
+        let hospitalName = try req.query.get(String.self, at: "hospitalName")
+        return Hospital.query(on: req.db)
+            .filter(\.$name == hospitalName)
+            .first()
+            .unwrap(or: Abort(.noContent))
             .flatMap { hospital -> EventLoopFuture<[Appointment]> in
                 Appointment.query(on: req.db)
                     .filter(\.$hospital.$id == hospital.id!)
